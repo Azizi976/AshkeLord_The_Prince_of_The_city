@@ -1,5 +1,6 @@
 #include "Game.hpp"
 #include "ResourceManager.hpp"
+#include "UI/DialogueBox.hpp" // הוספנו את זה
 #include <iostream>
 #include <algorithm>
 
@@ -92,6 +93,11 @@ bool Game::initialize() {
     
     // Get font
     m_font = resourceManager.getFont("default");
+
+    // --- אתחול מערכת הדיאלוגים (חדש!) ---
+    if (m_font) {
+        m_dialogueBox.init(m_font, getWindowSize());
+    }
     
     // Initialize menu text elements
     if (m_font) {
@@ -108,9 +114,6 @@ bool Game::initialize() {
         // Use dynamic window size for positioning
         sf::Vector2u windowSize = getWindowSize();
         titleText_.setPosition(windowSize.x / 2.0f, windowSize.y * 0.15f);
-        
-        // Add white outline effect (using multiple text renders or shadow)
-        // For simplicity, we'll use a shadow effect by drawing twice with offset
         
         // YALLA button
         yallaButton_.setFont(*m_font);
@@ -395,6 +398,13 @@ void Game::drawMenu() {
 }
 
 void Game::updatePlaying(float deltaTime) {
+    // --- עדכון מערכת הדיאלוגים (חדש!) ---
+    // אם הדיאלוג פתוח, אנחנו מעדכנים רק אותו ויוצאים (מקפיאים את השחקן)
+    if (m_dialogueBox.isActive()) {
+        m_dialogueBox.update(deltaTime);
+        return; 
+    }
+
     // Update player
     if (player_) {
         player_->update(deltaTime);
@@ -412,9 +422,6 @@ void Game::updatePlaying(float deltaTime) {
         handleNPCInteraction();
         interactionKeyPressed_ = false; // Reset flag
     }
-    
-    // Add other game logic updates here
-    // (collisions, game state, etc.)
 }
 
 void Game::drawPlaying() {
@@ -430,7 +437,9 @@ void Game::drawPlaying() {
         player_->render(*window_);
     }
     
-    // Render UI elements here (HUD, menus, etc.)
+    // --- ציור מערכת הדיאלוגים (חדש!) ---
+    // מציירים בסוף כדי שיופיע מעל הכל
+    m_dialogueBox.render(*window_);
 }
 
 bool Game::isMouseOverText(const sf::Text& text) const {
@@ -451,6 +460,10 @@ void Game::handleNPCInteraction() {
     // Check each NPC to see if player is nearby
     for (auto& npc : m_npcs) {
         if (npc && npc->isPlayerNearby(playerPos)) {
+            // --- הפעלת הדיאלוג (חדש!) ---
+            // פותח את הקופסה עם הטקסט של ה-NPC ושם הדובר
+            m_dialogueBox.showText(npc->getDialogue(), npc->getName());
+            
             // Interact with the first nearby NPC
             npc->interact(*player_);
             break; // Only interact with one NPC at a time
@@ -742,6 +755,10 @@ void Game::applySettings() {
         std::cout << "Settings applied: " 
                   << (gameSettings_.fullscreen ? "Fullscreen" : "Windowed") << " "
                   << selectedRes.width << "x" << selectedRes.height << std::endl;
+        
+        // --- עדכון גודל הדיאלוג אם הרזולוציה השתנתה (חדש!) ---
+        if (m_font) {
+            m_dialogueBox.init(m_font, getWindowSize());
+        }
     }
 }
-
