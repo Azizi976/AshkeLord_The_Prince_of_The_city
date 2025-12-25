@@ -88,19 +88,5 @@ AshkeLord/
 - ✅ Player movement with WASD/Arrow keys
 - ✅ Standard game loop (Input -> Update -> Render)
 
-## Next Steps
-
-To complete the game, you'll need to:
-
-1. Add the player sprite (`ars_sprite.png`) to `assets/textures/`
-2. Implement grid-based movement
-3. Add NPCs and enemies
-4. Create different neighborhoods/maps
-5. Implement the "evolution" system (street status upgrades)
-6. Add combat mechanics
-7. Create a UI/HUD system
-
-## License
-
 This is a personal project for educational purposes.
 
